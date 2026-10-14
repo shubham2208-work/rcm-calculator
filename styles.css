@@ -40,9 +40,9 @@ button:disabled {
 }
 
 .app {
-  width: min(760px, calc(100% - 32px));
+  width: min(1080px, calc(100% - 32px));
   margin: 0 auto;
-  padding: 36px 0 64px;
+  padding: 28px 0 48px;
 }
 
 .top {
@@ -101,12 +101,18 @@ h2 {
 .section-note,
 .bar-caption,
 .share,
-.empty,
-.service-meta {
+.empty {
   margin: 0;
   color: var(--muted);
   font-size: 15px;
   line-height: 1.5;
+}
+
+main {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(340px, 0.95fr);
+  gap: 18px;
+  align-items: start;
 }
 
 .entry,
@@ -121,8 +127,11 @@ h2 {
 }
 
 .ledger {
-  margin-top: 18px;
-  padding: 22px;
+  padding: 16px 16px 14px;
+}
+
+.ledger h2 {
+  font-size: 22px;
 }
 
 .code-input {
@@ -289,59 +298,82 @@ h2 {
 }
 
 .section-head {
-  margin-bottom: 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.section-note {
+  font-size: 13px;
+}
+
+.sheet-head,
+.service {
+  display: grid;
+  grid-template-columns: 1.15fr 0.95fr 0.7fr 0.95fr 1fr auto;
+  gap: 6px 8px;
+  align-items: center;
+}
+
+.sheet-head {
+  padding: 0 8px 6px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .services {
   display: grid;
-  gap: 12px;
+  max-height: 280px;
+  overflow: auto;
 }
 
 .empty {
-  padding: 18px;
+  padding: 12px;
   border: 1px dashed #c9bfb2;
-  border-radius: 16px;
+  border-radius: 12px;
   background: #fff;
+  font-size: 13px;
 }
 
 .service {
-  padding: 16px;
-  border: 1px solid var(--line);
-  border-radius: 16px;
+  padding: 6px 8px;
+  border-top: 1px solid var(--line);
   background: #fff;
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
 }
 
-.service-top {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.service.is-latest {
+  background: #fff8ef;
 }
 
 .service-code {
-  display: block;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-}
-
-.service-index {
   font-size: 13px;
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
+  letter-spacing: 0.04em;
 }
 
-.service-meta {
-  margin-top: 6px;
-  font-variant-numeric: tabular-nums;
+.patient-amount {
+  color: var(--patient);
+  font-weight: 700;
+}
+
+.insurance-amount {
+  color: var(--insurance);
+  font-weight: 700;
 }
 
 .text-button {
   background: transparent;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 600;
+  padding: 0;
 }
 
 .text-button:hover {
@@ -349,16 +381,16 @@ h2 {
 }
 
 .final {
-  margin-top: 18px;
-  padding-top: 18px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid var(--line);
 }
 
 .hero {
-  margin: 8px 0 18px;
+  margin: 2px 0 10px;
   font-family: Fraunces, Georgia, serif;
-  font-size: 64px;
-  line-height: 0.95;
+  font-size: 36px;
+  line-height: 1;
   font-weight: 650;
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
@@ -368,14 +400,15 @@ h2 {
 .totals {
   margin: 0;
   display: grid;
-  gap: 10px;
+  gap: 6px;
+  font-size: 14px;
 }
 
 .totals div {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  padding-bottom: 10px;
+  padding-bottom: 6px;
   border-bottom: 1px solid var(--line);
 }
 
@@ -391,8 +424,8 @@ h2 {
 
 .bar {
   display: flex;
-  height: 14px;
-  margin-top: 16px;
+  height: 8px;
+  margin-top: 10px;
   overflow: hidden;
   border-radius: 999px;
   background: #efe8df;
@@ -414,7 +447,8 @@ h2 {
 
 .button-reset {
   width: 100%;
-  margin-top: 18px;
+  height: 40px;
+  margin-top: 12px;
   background: transparent;
   color: var(--ink);
   border: 1px solid var(--ink);
@@ -424,7 +458,8 @@ h2 {
   background: #faf6f1;
 }
 
-@media (max-width: 640px) {
+@media (max-width: 860px) {
+  main,
   .inputs {
     grid-template-columns: 1fr;
   }
@@ -434,15 +469,40 @@ h2 {
   }
 
   .hero {
-    font-size: 52px;
+    font-size: 32px;
   }
 
   .portion strong {
     font-size: 26px;
   }
 
+  .sheet-head {
+    display: none;
+  }
+
+  .service {
+    grid-template-columns: 72px 1fr auto;
+    font-size: 12px;
+  }
+
+  .service-ins::before {
+    content: "Ins ";
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  .patient-amount::before {
+    content: "Pt ";
+    font-weight: 600;
+  }
+
+  .insurance-amount::before {
+    content: "Ins ";
+    font-weight: 600;
+  }
+
   .app {
-    width: min(760px, calc(100% - 20px));
+    width: min(1080px, calc(100% - 20px));
     padding-top: 20px;
   }
 }

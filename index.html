@@ -108,6 +108,14 @@
             <h2 id="services-heading">Services</h2>
             <p id="service-count" class="section-note">No services yet</p>
           </div>
+          <div class="sheet-head" aria-hidden="true">
+            <span>Code</span>
+            <span>Amount</span>
+            <span>Ins %</span>
+            <span>Patient</span>
+            <span>Insurance</span>
+            <span></span>
+          </div>
           <div id="services" class="services"></div>
 
           <div class="final" aria-labelledby="final-heading">
@@ -140,24 +148,12 @@
 
     <template id="service-template">
       <article class="service">
-        <div class="service-top">
-          <div>
-            <span class="service-code"></span>
-            <span class="service-index"></span>
-          </div>
-          <button type="button" class="text-button remove">Remove</button>
-        </div>
-        <p class="service-meta"></p>
-        <div class="portions">
-          <div class="portion portion-patient">
-            <span>Patient portion</span>
-            <strong class="patient-amount"></strong>
-          </div>
-          <div class="portion portion-insurance">
-            <span>Insurance portion</span>
-            <strong class="insurance-amount"></strong>
-          </div>
-        </div>
+        <span class="service-code"></span>
+        <span class="service-charge"></span>
+        <span class="service-ins"></span>
+        <strong class="patient-amount"></strong>
+        <strong class="insurance-amount"></strong>
+        <button type="button" class="text-button remove">Remove</button>
       </article>
     </template>
 

@@ -154,11 +154,11 @@ function renderServices() {
       ...services.map((service, index) => {
         const row = serviceTemplate.content.firstElementChild.cloneNode(true);
         row.querySelector(".service-code").textContent = service.adaCode;
-        row.querySelector(".service-index").textContent = `Service ${index + 1}`;
-        row.querySelector(".service-meta").textContent =
-          `${formatCents(service.chargeCents)} · insurance ${formatPercent(service.insuranceBp)} · patient ${formatPercent(service.patientBp)}`;
+        row.querySelector(".service-charge").textContent = formatCents(service.chargeCents);
+        row.querySelector(".service-ins").textContent = formatPercent(service.insuranceBp);
         row.querySelector(".patient-amount").textContent = formatCents(service.patientCents);
         row.querySelector(".insurance-amount").textContent = formatCents(service.insuranceCents);
+        if (index === services.length - 1) row.classList.add("is-latest");
         row.querySelector(".remove").addEventListener("click", () => {
           const at = services.findIndex((item) => item.id === service.id);
           if (at !== -1) services.splice(at, 1);
@@ -208,8 +208,7 @@ function addService() {
   amountInput.value = "";
   renderServices();
   updatePreview();
-  const last = servicesEl.querySelector(".service:last-child");
-  last?.scrollIntoView({ block: "nearest" });
+  servicesEl.scrollTop = servicesEl.scrollHeight;
   adaInput.focus();
 }
 
