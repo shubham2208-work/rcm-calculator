@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>RCM Patient Portion Calculator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,560;9..144,650&family=Outfit:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="top">
+        <div class="brand">
+          <span class="mark" aria-hidden="true">RCM</span>
+          <div>
+            <p class="eyebrow">Revenue cycle calculator</p>
+            <h1>Patient portion</h1>
+          </div>
+        </div>
+        <p class="lede">
+          Enter the ADA code, the insurance percent, and the service amount.
+          Add the result, then do the next service. Each code stays with that
+          service, and the final updates as you go.
+        </p>
+      </header>
+
+      <main>
+        <section class="entry" aria-labelledby="entry-heading">
+          <p class="eyebrow">This service</p>
+          <h2 id="entry-heading">Code, insurance, and amount</h2>
+
+          <form id="entry-form">
+            <label class="field">
+              <span>ADA code</span>
+              <input
+                id="ada-code"
+                class="code-input"
+                type="text"
+                autocomplete="off"
+                maxlength="10"
+                placeholder="Your ADA code here"
+                aria-label="ADA code"
+                spellcheck="false"
+              />
+            </label>
+
+            <div class="inputs">
+              <label class="field">
+                <span>Insurance covers</span>
+                <span class="affix affix-percent">
+                  <input
+                    id="percent"
+                    type="text"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    placeholder="ins"
+                    aria-label="Insurance coverage percent"
+                  />
+                  <span aria-hidden="true">%</span>
+                </span>
+              </label>
+
+              <label class="field">
+                <span>Service amount</span>
+                <span class="affix affix-money">
+                  <span aria-hidden="true">$</span>
+                  <input
+                    id="amount"
+                    type="text"
+                    inputmode="decimal"
+                    autocomplete="off"
+                    placeholder="0.00"
+                    aria-label="Service amount in dollars"
+                  />
+                </span>
+              </label>
+            </div>
+
+            <p class="share">
+              Patient share <strong id="preview-patient-percent">—</strong>
+            </p>
+
+            <div class="portions">
+              <div class="portion portion-patient" id="preview-patient-card">
+                <span>Patient portion</span>
+                <strong id="preview-patient">$0.00</strong>
+              </div>
+              <div class="portion portion-insurance" id="preview-insurance-card">
+                <span>Insurance portion</span>
+                <strong id="preview-insurance">$0.00</strong>
+              </div>
+            </div>
+
+            <button type="submit" class="button button-wide" id="add-service">
+              Add this service
+            </button>
+            <p id="entry-hint" class="hint">Enter an ADA code, a percent, and an amount, then add it to the visit.</p>
+          </form>
+        </section>
+
+        <section class="ledger" aria-labelledby="services-heading">
+          <div class="section-head">
+            <h2 id="services-heading">Services</h2>
+            <p id="service-count" class="section-note">No services yet</p>
+          </div>
+          <div id="services" class="services"></div>
+
+          <div class="final" aria-labelledby="final-heading">
+            <p class="eyebrow">Final</p>
+            <h2 id="final-heading">Patient owes</h2>
+            <p class="hero" id="total-patient" aria-live="polite">$0.00</p>
+            <dl class="totals">
+              <div>
+                <dt>Insurance pays</dt>
+                <dd id="total-insurance">$0.00</dd>
+              </div>
+              <div>
+                <dt>Total charges</dt>
+                <dd id="total-charges">$0.00</dd>
+              </div>
+            </dl>
+            <div class="bar" aria-hidden="true">
+              <span id="bar-patient" class="bar-patient"></span>
+              <span id="bar-insurance" class="bar-insurance"></span>
+            </div>
+            <p id="bar-caption" class="bar-caption">The final is the sum of every service above.</p>
+          </div>
+
+          <button type="button" class="button button-reset" id="reset">
+            Reset for a new patient
+          </button>
+        </section>
+      </main>
+    </div>
+
+    <template id="service-template">
+      <article class="service">
+        <div class="service-top">
+          <div>
+            <span class="service-code"></span>
+            <span class="service-index"></span>
+          </div>
+          <button type="button" class="text-button remove">Remove</button>
+        </div>
+        <p class="service-meta"></p>
+        <div class="portions">
+          <div class="portion portion-patient">
+            <span>Patient portion</span>
+            <strong class="patient-amount"></strong>
+          </div>
+          <div class="portion portion-insurance">
+            <span>Insurance portion</span>
+            <strong class="insurance-amount"></strong>
+          </div>
+        </div>
+      </article>
+    </template>
+
+    <script src="app.js"></script>
+  </body>
+</html>
