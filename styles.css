@@ -193,8 +193,16 @@ button:disabled {
 
 .visit-value {
   margin: 0;
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.deductible-dialog #patient-name,
+.deductible-dialog #office-name {
+  font-size: 18px;
   font-weight: 700;
-  font-size: 15px;
 }
 
 #edit-visit {
