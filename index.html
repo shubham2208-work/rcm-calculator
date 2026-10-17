@@ -13,6 +13,44 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <dialog id="deductible-dialog" class="deductible-dialog" aria-labelledby="deductible-title">
+      <form id="deductible-form" method="dialog">
+        <p class="eyebrow">Before you start</p>
+        <h2 id="deductible-title">Patient deductible</h2>
+        <p class="dialog-lede">Is a deductible applicable for this patient visit?</p>
+
+        <fieldset class="deductible-choice">
+          <legend class="sr-only">Deductible applicable</legend>
+          <label class="choice">
+            <input type="radio" name="deductible-applicable" value="no" checked />
+            <span>No</span>
+          </label>
+          <label class="choice">
+            <input type="radio" name="deductible-applicable" value="yes" />
+            <span>Yes</span>
+          </label>
+        </fieldset>
+
+        <label class="field deductible-amount-field is-hidden" id="deductible-amount-wrap">
+          <span>Deductible amount</span>
+          <span class="affix affix-money">
+            <span aria-hidden="true">$</span>
+            <input
+              id="deductible-amount"
+              type="text"
+              inputmode="decimal"
+              autocomplete="off"
+              placeholder="0.00"
+              aria-label="Deductible amount in dollars"
+            />
+          </span>
+        </label>
+        <p id="deductible-error" class="deductible-error" role="alert"></p>
+
+        <button type="submit" class="button button-wide">Continue</button>
+      </form>
+    </dialog>
+
     <div class="app">
       <header class="top">
         <div class="brand">
@@ -123,6 +161,19 @@
             <h2 id="final-heading">Patient owes</h2>
             <p class="hero" id="total-patient" aria-live="polite">$0.00</p>
             <dl class="totals">
+              <div>
+                <dt>Patient portion (services)</dt>
+                <dd id="total-patient-services">$0.00</dd>
+              </div>
+              <div id="deductible-row" class="is-hidden">
+                <dt>
+                  Deductible
+                  <button type="button" class="text-button inline-edit" id="edit-deductible">
+                    Edit
+                  </button>
+                </dt>
+                <dd id="total-deductible">$0.00</dd>
+              </div>
               <div>
                 <dt>Insurance pays</dt>
                 <dd id="total-insurance">$0.00</dd>

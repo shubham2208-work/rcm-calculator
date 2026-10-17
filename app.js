@@ -22,10 +22,23 @@ const totalChargesEl = document.querySelector("#total-charges");
 const barPatientEl = document.querySelector("#bar-patient");
 const barInsuranceEl = document.querySelector("#bar-insurance");
 const barCaptionEl = document.querySelector("#bar-caption");
+const totalPatientServicesEl = document.querySelector("#total-patient-services");
+const deductibleRowEl = document.querySelector("#deductible-row");
+const totalDeductibleEl = document.querySelector("#total-deductible");
+const deductibleDialog = document.querySelector("#deductible-dialog");
+const deductibleForm = document.querySelector("#deductible-form");
+const deductibleAmountWrap = document.querySelector("#deductible-amount-wrap");
+const deductibleAmountInput = document.querySelector("#deductible-amount");
+const deductibleErrorEl = document.querySelector("#deductible-error");
+const editDeductibleBtn = document.querySelector("#edit-deductible");
 const form = document.querySelector("#entry-form");
 
 let nextId = 1;
 const services = [];
+const visit = {
+  deductibleApplicable: false,
+  deductibleCents: 0,
+};
 
 function sanitizeAmount(raw) {
   let value = String(raw).replace(/[^0-9.]/g, "");
@@ -184,18 +197,96 @@ function updateFinal() {
     { chargeCents: 0, insuranceCents: 0, patientCents: 0 }
   );
 
-  totalPatientEl.textContent = formatCents(sum.patientCents);
+  const deductibleCents = visit.deductibleApplicable ? visit.deductibleCents : 0;
+  const patientOwesCents = sum.patientCents + deductibleCents;
+
+  totalPatientServicesEl.textContent = formatCents(sum.patientCents);
+  totalPatientEl.textContent = formatCents(patientOwesCents);
   totalInsuranceEl.textContent = formatCents(sum.insuranceCents);
   totalChargesEl.textContent = formatCents(sum.chargeCents);
 
+  deductibleRowEl.classList.toggle("is-hidden", !visit.deductibleApplicable);
+  totalDeductibleEl.textContent = formatCents(deductibleCents);
+
   const charge = sum.chargeCents;
-  const patientWidth = charge === 0 ? 0 : (sum.patientCents / charge) * 100;
-  barPatientEl.style.width = `${patientWidth}%`;
-  barInsuranceEl.style.width = `${charge === 0 ? 0 : 100 - patientWidth}%`;
-  barCaptionEl.textContent =
-    charge === 0
-      ? "The final is the sum of every service above."
-      : `${formatCents(sum.patientCents)} patient · ${formatCents(sum.insuranceCents)} insurance`;
+  const patientWidth = charge === 0 ? 0 : (patientOwesCents / charge) * 100;
+  const cappedPatient = Math.min(100, patientWidth);
+  barPatientEl.style.width = `${cappedPatient}%`;
+  barInsuranceEl.style.width = `${charge === 0 ? 0 : 100 - cappedPatient}%`;
+
+  if (charge === 0 && deductibleCents === 0) {
+    barCaptionEl.textContent = "The final is the sum of every service above.";
+  } else if (visit.deductibleApplicable && deductibleCents > 0) {
+    barCaptionEl.textContent = `${formatCents(sum.patientCents)} services + ${formatCents(deductibleCents)} deductible · ${formatCents(sum.insuranceCents)} insurance`;
+  } else {
+    barCaptionEl.textContent = `${formatCents(sum.patientCents)} patient · ${formatCents(sum.insuranceCents)} insurance`;
+  }
+}
+
+function syncDeductibleForm() {
+  const yes = visit.deductibleApplicable;
+  deductibleForm.querySelector(`input[value="${yes ? "yes" : "no"}"]`).checked = true;
+  deductibleAmountWrap.classList.toggle("is-hidden", !yes);
+  if (yes && visit.deductibleCents > 0) {
+    deductibleAmountInput.value = sanitizeAmount(String(visit.deductibleCents / 100));
+  } else {
+    deductibleAmountInput.value = "";
+  }
+  deductibleErrorEl.textContent = "";
+}
+
+function openDeductibleDialog() {
+  syncDeductibleForm();
+  if (typeof deductibleDialog.showModal === "function") {
+    deductibleDialog.showModal();
+  } else {
+    deductibleDialog.setAttribute("open", "");
+  }
+  const focusTarget = visit.deductibleApplicable
+    ? deductibleAmountInput
+    : deductibleForm.querySelector('input[value="no"]');
+  focusTarget?.focus();
+}
+
+function closeDeductibleDialog() {
+  if (deductibleDialog.open) deductibleDialog.close();
+  deductibleDialog.removeAttribute("open");
+}
+
+function onDeductibleChoiceChange() {
+  const yes =
+    deductibleForm.querySelector('input[name="deductible-applicable"]:checked')?.value ===
+    "yes";
+  deductibleAmountWrap.classList.toggle("is-hidden", !yes);
+  deductibleErrorEl.textContent = "";
+  if (yes) deductibleAmountInput.focus();
+}
+
+function saveDeductibleFromDialog() {
+  const yes =
+    deductibleForm.querySelector('input[name="deductible-applicable"]:checked')?.value ===
+    "yes";
+  if (!yes) {
+    visit.deductibleApplicable = false;
+    visit.deductibleCents = 0;
+    closeDeductibleDialog();
+    updateFinal();
+    adaInput.focus();
+    return;
+  }
+
+  const cents = amountToCents(deductibleAmountInput.value);
+  if (cents <= 0) {
+    deductibleErrorEl.textContent = "Enter the deductible dollar amount.";
+    deductibleAmountInput.focus();
+    return;
+  }
+
+  visit.deductibleApplicable = true;
+  visit.deductibleCents = cents;
+  closeDeductibleDialog();
+  updateFinal();
+  adaInput.focus();
 }
 
 function addService() {
@@ -215,12 +306,14 @@ function addService() {
 function resetVisit() {
   services.splice(0, services.length);
   nextId = 1;
+  visit.deductibleApplicable = false;
+  visit.deductibleCents = 0;
   adaInput.value = "";
   percentInput.value = "";
   amountInput.value = "";
   renderServices();
   updatePreview();
-  adaInput.focus();
+  openDeductibleDialog();
 }
 
 adaInput.addEventListener("input", () => {
@@ -245,6 +338,22 @@ form.addEventListener("submit", (event) => {
 
 document.querySelector("#reset").addEventListener("click", resetVisit);
 
+deductibleForm.querySelectorAll('input[name="deductible-applicable"]').forEach((input) => {
+  input.addEventListener("change", onDeductibleChoiceChange);
+});
+
+deductibleAmountInput.addEventListener("input", () => {
+  setCaret(deductibleAmountInput, sanitizeAmount(deductibleAmountInput.value));
+  deductibleErrorEl.textContent = "";
+});
+
+deductibleForm.addEventListener("submit", (event) => {
+  event.preventDefault();
+  saveDeductibleFromDialog();
+});
+
+editDeductibleBtn.addEventListener("click", openDeductibleDialog);
+
 renderServices();
 updatePreview();
-adaInput.focus();
+openDeductibleDialog();

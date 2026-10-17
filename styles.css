@@ -39,6 +39,96 @@ button:disabled {
   opacity: 0.45;
 }
 
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.is-hidden {
+  display: none !important;
+}
+
+.deductible-dialog {
+  width: min(420px, calc(100% - 32px));
+  padding: 0;
+  border: 0;
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+}
+
+.deductible-dialog::backdrop {
+  background: rgba(29, 25, 21, 0.45);
+}
+
+.deductible-dialog form {
+  padding: 22px;
+}
+
+.dialog-lede {
+  margin: 0 0 16px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.deductible-choice {
+  margin: 0 0 14px;
+  padding: 0;
+  border: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 12px;
+  border: 1px solid #ddd4c8;
+  border-radius: 12px;
+  background: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.choice:has(input:checked) {
+  border-color: var(--ink);
+  box-shadow: 0 0 0 3px rgba(29, 25, 21, 0.1);
+}
+
+.choice input {
+  accent-color: var(--ink);
+}
+
+.deductible-amount-field {
+  margin-bottom: 8px;
+}
+
+.deductible-error {
+  min-height: 1.2em;
+  margin: 0 0 8px;
+  color: var(--patient);
+  font-size: 14px;
+}
+
+.inline-edit {
+  margin-left: 8px;
+  font-size: 12px;
+  vertical-align: baseline;
+}
+
 .app {
   width: min(1080px, calc(100% - 32px));
   margin: 0 auto;
@@ -413,6 +503,10 @@ main {
 }
 
 .totals dt {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
   color: var(--muted);
 }
 
