@@ -20,6 +20,7 @@ const totalPatientEl = document.querySelector("#total-patient");
 const totalInsuranceEl = document.querySelector("#total-insurance");
 const totalChargesEl = document.querySelector("#total-charges");
 const barPatientEl = document.querySelector("#bar-patient");
+const barDeductibleEl = document.querySelector("#bar-deductible");
 const barInsuranceEl = document.querySelector("#bar-insurance");
 const barCaptionEl = document.querySelector("#bar-caption");
 const totalPatientServicesEl = document.querySelector("#total-patient-services");
@@ -208,11 +209,17 @@ function updateFinal() {
   deductibleRowEl.classList.toggle("is-hidden", !visit.deductibleApplicable);
   totalDeductibleEl.textContent = formatCents(deductibleCents);
 
-  const charge = sum.chargeCents;
-  const patientWidth = charge === 0 ? 0 : (patientOwesCents / charge) * 100;
-  const cappedPatient = Math.min(100, patientWidth);
-  barPatientEl.style.width = `${cappedPatient}%`;
-  barInsuranceEl.style.width = `${charge === 0 ? 0 : 100 - cappedPatient}%`;
+  const barTotal =
+    sum.patientCents + deductibleCents + sum.insuranceCents;
+  if (barTotal === 0) {
+    barPatientEl.style.width = "0%";
+    barDeductibleEl.style.width = "0%";
+    barInsuranceEl.style.width = "0%";
+  } else {
+    barPatientEl.style.width = `${(sum.patientCents / barTotal) * 100}%`;
+    barDeductibleEl.style.width = `${(deductibleCents / barTotal) * 100}%`;
+    barInsuranceEl.style.width = `${(sum.insuranceCents / barTotal) * 100}%`;
+  }
 
   if (charge === 0 && deductibleCents === 0) {
     barCaptionEl.textContent = "The final is the sum of every service above.";

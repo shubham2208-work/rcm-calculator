@@ -161,11 +161,11 @@
             <h2 id="final-heading">Patient owes</h2>
             <p class="hero" id="total-patient" aria-live="polite">$0.00</p>
             <dl class="totals">
-              <div>
+              <div class="totals-patient">
                 <dt>Patient portion (services)</dt>
                 <dd id="total-patient-services">$0.00</dd>
               </div>
-              <div id="deductible-row" class="is-hidden">
+              <div id="deductible-row" class="totals-deductible is-hidden">
                 <dt>
                   Deductible
                   <button type="button" class="text-button inline-edit" id="edit-deductible">
@@ -174,7 +174,7 @@
                 </dt>
                 <dd id="total-deductible">$0.00</dd>
               </div>
-              <div>
+              <div class="totals-insurance">
                 <dt>Insurance pays</dt>
                 <dd id="total-insurance">$0.00</dd>
               </div>
@@ -185,6 +185,7 @@
             </dl>
             <div class="bar" aria-hidden="true">
               <span id="bar-patient" class="bar-patient"></span>
+              <span id="bar-deductible" class="bar-deductible"></span>
               <span id="bar-insurance" class="bar-insurance"></span>
             </div>
             <p id="bar-caption" class="bar-caption">The final is the sum of every service above.</p>

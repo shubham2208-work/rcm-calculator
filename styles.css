@@ -10,10 +10,12 @@
   --muted: var(--palette-steel);
   --card: #ffffff;
   --line: var(--palette-sky);
-  --patient: var(--palette-deep);
-  --patient-bg: #e4eef7;
-  --insurance: var(--palette-steel);
-  --insurance-bg: #dceaf4;
+  --patient: #1a3d63;
+  --patient-bg: #d6e8f8;
+  --insurance: #2a8fae;
+  --insurance-bg: #cceef5;
+  --deductible: #7a5535;
+  --deductible-bg: #f2e6d8;
   --surface-muted: #eef4fa;
   --input-bg: var(--palette-frost);
   --shadow: 0 20px 50px rgba(10, 25, 49, 0.1);
@@ -130,7 +132,7 @@ button:disabled {
 .deductible-error {
   min-height: 1.2em;
   margin: 0 0 8px;
-  color: var(--patient);
+  color: var(--deductible);
   font-size: 14px;
 }
 
@@ -469,6 +471,18 @@ main {
   font-weight: 700;
 }
 
+.service-ins {
+  color: var(--insurance);
+  font-weight: 600;
+}
+
+.totals-deductible {
+  padding: 6px 8px;
+  margin: 0 -8px;
+  border-radius: 10px;
+  background: var(--deductible-bg);
+}
+
 .text-button {
   background: transparent;
   color: var(--muted);
@@ -527,6 +541,33 @@ main {
   font-variant-numeric: tabular-nums;
 }
 
+.totals-patient dd {
+  color: var(--patient);
+}
+
+.totals-deductible dd {
+  color: var(--deductible);
+}
+
+.totals-insurance dd {
+  color: var(--insurance);
+}
+
+.totals-patient dt {
+  color: var(--patient);
+  opacity: 0.85;
+}
+
+.totals-deductible dt {
+  color: var(--deductible);
+  opacity: 0.85;
+}
+
+.totals-insurance dt {
+  color: var(--insurance);
+  opacity: 0.85;
+}
+
 .bar {
   display: flex;
   height: 8px;
@@ -537,13 +578,23 @@ main {
 }
 
 .bar-patient {
-  background: var(--palette-deep);
+  background: var(--patient);
+  width: 0;
+}
+
+.bar-deductible {
+  background: var(--deductible);
   width: 0;
 }
 
 .bar-insurance {
-  background: var(--palette-steel);
+  background: var(--insurance);
   width: 0;
+}
+
+.portion-deductible {
+  background: var(--deductible-bg);
+  color: var(--deductible);
 }
 
 .bar-caption {
