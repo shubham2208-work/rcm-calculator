@@ -68,7 +68,7 @@ button:disabled {
 }
 
 .deductible-dialog {
-  width: min(420px, calc(100% - 32px));
+  width: min(440px, calc(100% - 32px));
   padding: 0;
   border: 0;
   border-radius: 20px;
@@ -125,8 +125,80 @@ button:disabled {
   accent-color: var(--ink);
 }
 
+.text-input {
+  width: 100%;
+  height: 48px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--input-bg);
+  padding: 0 14px;
+  outline: none;
+  font-size: 16px;
+}
+
+.text-input:focus {
+  border-color: var(--palette-steel);
+  box-shadow: var(--focus-ring);
+}
+
+.deductible-dialog .field {
+  margin-bottom: 12px;
+}
+
+.dialog-section {
+  margin: 4px 0 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+}
+
+.dialog-section-title {
+  margin: 0;
+  font-family: Fraunces, Georgia, serif;
+  font-size: 20px;
+  font-weight: 560;
+  letter-spacing: -0.02em;
+}
+
+.dialog-section-note {
+  margin: 4px 0 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
 .deductible-amount-field {
   margin-bottom: 8px;
+}
+
+.visit-banner {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 12px 16px;
+  align-items: end;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.visit-label {
+  margin: 0 0 2px;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.visit-value {
+  margin: 0;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+#edit-visit {
+  align-self: center;
 }
 
 .deductible-error {
@@ -152,6 +224,16 @@ button:disabled {
   display: grid;
   gap: 14px;
   margin-bottom: 22px;
+}
+
+@media (max-width: 640px) {
+  .visit-banner {
+    grid-template-columns: 1fr;
+  }
+
+  #edit-visit {
+    justify-self: start;
+  }
 }
 
 .brand {

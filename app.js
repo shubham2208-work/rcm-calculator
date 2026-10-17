@@ -32,14 +32,26 @@ const deductibleAmountWrap = document.querySelector("#deductible-amount-wrap");
 const deductibleAmountInput = document.querySelector("#deductible-amount");
 const deductibleErrorEl = document.querySelector("#deductible-error");
 const editDeductibleBtn = document.querySelector("#edit-deductible");
+const patientNameInput = document.querySelector("#patient-name");
+const officeNameInput = document.querySelector("#office-name");
+const visitBannerEl = document.querySelector("#visit-banner");
+const visitPatientNameEl = document.querySelector("#visit-patient-name");
+const visitOfficeNameEl = document.querySelector("#visit-office-name");
+const editVisitBtn = document.querySelector("#edit-visit");
 const form = document.querySelector("#entry-form");
 
 let nextId = 1;
 const services = [];
 const visit = {
+  patientName: "",
+  officeName: "",
   deductibleApplicable: false,
   deductibleCents: 0,
 };
+
+function sanitizeName(raw) {
+  return String(raw).replace(/\s+/g, " ").trim().slice(0, 80);
+}
 
 function sanitizeAmount(raw) {
   let value = String(raw).replace(/[^0-9.]/g, "");
@@ -230,7 +242,16 @@ function updateFinal() {
   }
 }
 
+function updateVisitBanner() {
+  const ready = visit.patientName !== "" && visit.officeName !== "";
+  visitBannerEl.classList.toggle("is-hidden", !ready);
+  visitPatientNameEl.textContent = ready ? visit.patientName : "—";
+  visitOfficeNameEl.textContent = ready ? visit.officeName : "—";
+}
+
 function syncDeductibleForm() {
+  patientNameInput.value = visit.patientName;
+  officeNameInput.value = visit.officeName;
   const yes = visit.deductibleApplicable;
   deductibleForm.querySelector(`input[value="${yes ? "yes" : "no"}"]`).checked = true;
   deductibleAmountWrap.classList.toggle("is-hidden", !yes);
@@ -249,10 +270,7 @@ function openDeductibleDialog() {
   } else {
     deductibleDialog.setAttribute("open", "");
   }
-  const focusTarget = visit.deductibleApplicable
-    ? deductibleAmountInput
-    : deductibleForm.querySelector('input[value="no"]');
-  focusTarget?.focus();
+  patientNameInput.focus();
 }
 
 function closeDeductibleDialog() {
@@ -270,6 +288,22 @@ function onDeductibleChoiceChange() {
 }
 
 function saveDeductibleFromDialog() {
+  const patientName = sanitizeName(patientNameInput.value);
+  const officeName = sanitizeName(officeNameInput.value);
+  if (patientName === "") {
+    deductibleErrorEl.textContent = "Enter the patient name.";
+    patientNameInput.focus();
+    return;
+  }
+  if (officeName === "") {
+    deductibleErrorEl.textContent = "Enter the office name.";
+    officeNameInput.focus();
+    return;
+  }
+
+  visit.patientName = patientName;
+  visit.officeName = officeName;
+
   const yes =
     deductibleForm.querySelector('input[name="deductible-applicable"]:checked')?.value ===
     "yes";
@@ -277,6 +311,7 @@ function saveDeductibleFromDialog() {
     visit.deductibleApplicable = false;
     visit.deductibleCents = 0;
     closeDeductibleDialog();
+    updateVisitBanner();
     updateFinal();
     adaInput.focus();
     return;
@@ -292,6 +327,7 @@ function saveDeductibleFromDialog() {
   visit.deductibleApplicable = true;
   visit.deductibleCents = cents;
   closeDeductibleDialog();
+  updateVisitBanner();
   updateFinal();
   adaInput.focus();
 }
@@ -313,6 +349,8 @@ function addService() {
 function resetVisit() {
   services.splice(0, services.length);
   nextId = 1;
+  visit.patientName = "";
+  visit.officeName = "";
   visit.deductibleApplicable = false;
   visit.deductibleCents = 0;
   adaInput.value = "";
@@ -320,6 +358,7 @@ function resetVisit() {
   amountInput.value = "";
   renderServices();
   updatePreview();
+  updateVisitBanner();
   openDeductibleDialog();
 }
 
@@ -360,7 +399,17 @@ deductibleForm.addEventListener("submit", (event) => {
 });
 
 editDeductibleBtn.addEventListener("click", openDeductibleDialog);
+editVisitBtn.addEventListener("click", openDeductibleDialog);
+
+patientNameInput.addEventListener("input", () => {
+  deductibleErrorEl.textContent = "";
+});
+
+officeNameInput.addEventListener("input", () => {
+  deductibleErrorEl.textContent = "";
+});
 
 renderServices();
 updatePreview();
+updateVisitBanner();
 openDeductibleDialog();

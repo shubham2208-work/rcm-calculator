@@ -16,8 +16,39 @@
     <dialog id="deductible-dialog" class="deductible-dialog" aria-labelledby="deductible-title">
       <form id="deductible-form" method="dialog">
         <p class="eyebrow">Before you start</p>
-        <h2 id="deductible-title">Patient deductible</h2>
-        <p class="dialog-lede">Is a deductible applicable for this patient visit?</p>
+        <h2 id="deductible-title">Visit details</h2>
+        <p class="dialog-lede">Enter the patient and office, then say if a deductible applies.</p>
+
+        <label class="field">
+          <span>Patient name</span>
+          <input
+            id="patient-name"
+            class="text-input"
+            type="text"
+            autocomplete="name"
+            maxlength="80"
+            placeholder="Patient name"
+            aria-label="Patient name"
+          />
+        </label>
+
+        <label class="field">
+          <span>Office name</span>
+          <input
+            id="office-name"
+            class="text-input"
+            type="text"
+            autocomplete="organization"
+            maxlength="80"
+            placeholder="Office name"
+            aria-label="Office name"
+          />
+        </label>
+
+        <div class="dialog-section">
+          <p class="dialog-section-title">Deductible</p>
+          <p class="dialog-section-note">Is a deductible applicable for this visit?</p>
+        </div>
 
         <fieldset class="deductible-choice">
           <legend class="sr-only">Deductible applicable</legend>
@@ -59,6 +90,17 @@
             <p class="eyebrow">Revenue cycle calculator</p>
             <h1>Patient portion</h1>
           </div>
+        </div>
+        <div class="visit-banner is-hidden" id="visit-banner">
+          <div>
+            <p class="visit-label">Patient</p>
+            <p class="visit-value" id="visit-patient-name">—</p>
+          </div>
+          <div>
+            <p class="visit-label">Office</p>
+            <p class="visit-value" id="visit-office-name">—</p>
+          </div>
+          <button type="button" class="text-button" id="edit-visit">Edit visit</button>
         </div>
         <p class="lede">
           Enter the ADA code, the insurance percent, and the service amount.
