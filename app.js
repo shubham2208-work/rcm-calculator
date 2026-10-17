@@ -384,6 +384,15 @@ form.addEventListener("submit", (event) => {
 
 document.querySelector("#reset").addEventListener("click", resetVisit);
 
+document.querySelector("#print-estimate").addEventListener("click", () => {
+  if (visit.patientName === "" || visit.officeName === "") {
+    openDeductibleDialog();
+    deductibleErrorEl.textContent = "Enter patient and office name before printing.";
+    return;
+  }
+  window.print();
+});
+
 deductibleForm.querySelectorAll('input[name="deductible-applicable"]').forEach((input) => {
   input.addEventListener("change", onDeductibleChoiceChange);
 });
