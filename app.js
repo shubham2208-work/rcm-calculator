@@ -193,16 +193,27 @@ function sanitizePercent(raw) {
   return next;
 }
 
+const ADA_CODE_PATTERN = /^D\d{4}$/;
+
 function sanitizeAdaCode(raw) {
-  let value = String(raw).toUpperCase().replace(/[^A-Z0-9]/g, "");
-  if (value === "") return "";
-  if (/^\d/.test(value)) value = `D${value}`;
-  if (!value.startsWith("D")) value = `D${value.replace(/^D*/, "")}`;
-  return value.slice(0, 5);
+  const text = String(raw).toUpperCase();
+  if (text === "") return "";
+  const digits = text.replace(/^D?/i, "").replace(/[^0-9]/g, "").slice(0, 4);
+  if (digits === "" && text.includes("D")) return ADA_DEFAULT_PREFIX;
+  if (digits === "") return "";
+  return `${ADA_DEFAULT_PREFIX}${digits}`;
+}
+
+function isAdaCodeFormatValid(code) {
+  return ADA_CODE_PATTERN.test(code);
 }
 
 function isAdaCodeEntryReady(code) {
-  return code !== "" && code !== ADA_DEFAULT_PREFIX;
+  return isAdaCodeFormatValid(code);
+}
+
+function isKnownAdaCode(code) {
+  return ADA_CODE_INDEX.some((item) => item.code === code);
 }
 
 function ensureAdaDefaultOnFocus() {
@@ -454,11 +465,14 @@ function updatePreview() {
   const untouched =
     !isAdaCodeEntryReady(adaCode) && percentInput.value === "" && amountInput.value === "";
   if (ready) {
-    entryHint.textContent = `${adaCode} is ready. Add it, then enter the next service.`;
+    const catalogNote = isKnownAdaCode(adaCode) ? "" : " (not in the suggestion list)";
+    entryHint.textContent = `${adaCode} is ready${catalogNote}. Add it, then enter the next service.`;
   } else if (untouched) {
     entryHint.textContent = "Enter an ADA code, a percent, and an amount, then add it to the visit.";
+  } else if (adaCode === ADA_DEFAULT_PREFIX || adaCode.length < 5) {
+    entryHint.textContent = "Enter the ADA code as D plus four digits (example: D0120).";
   } else if (!isAdaCodeEntryReady(adaCode)) {
-    entryHint.textContent = "Enter the ADA code for this service (starts with D).";
+    entryHint.textContent = "Use D followed by exactly four digits for the ADA code.";
   } else if (insuranceBp === null) {
     entryHint.textContent = "Enter the insurance percent for this service.";
   } else {
