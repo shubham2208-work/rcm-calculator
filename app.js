@@ -237,7 +237,7 @@ function updateFinal() {
     barInsuranceEl.style.width = `${(sum.insuranceCents / barTotal) * 100}%`;
   }
 
-  if (charge === 0 && deductibleCents === 0) {
+  if (sum.chargeCents === 0 && deductibleCents === 0) {
     barCaptionEl.textContent = "The final is the sum of every service above.";
   } else if (visit.deductibleApplicable && deductibleCents > 0) {
     barCaptionEl.textContent = `${formatCents(sum.patientCents)} services + ${formatCents(deductibleCents)} deductible · ${formatCents(sum.insuranceCents)} insurance`;
