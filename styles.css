@@ -343,6 +343,83 @@ button:disabled {
   letter-spacing: 0.08em;
 }
 
+.brand-mark {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.brand-mark-rcm,
+.brand-mark-icon {
+  grid-area: 1 / 1;
+  display: grid;
+  place-items: center;
+}
+
+.brand-mark-rcm {
+  animation: brand-mark-rcm 4.8s ease-in-out infinite;
+}
+
+.brand-mark-icon {
+  opacity: 0;
+  animation: brand-mark-icon 4.8s ease-in-out infinite;
+}
+
+.brand-mark-icon svg {
+  display: block;
+}
+
+@keyframes brand-mark-rcm {
+  0%,
+  38% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  48%,
+  88% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes brand-mark-icon {
+  0%,
+  38% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+
+  48%,
+  88% {
+    opacity: 1;
+    transform: scale(1);
+  }
+
+  100% {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark-rcm {
+    animation: none;
+    opacity: 1;
+    transform: none;
+  }
+
+  .brand-mark-icon {
+    animation: none;
+    opacity: 0;
+    transform: none;
+  }
+}
+
 .eyebrow {
   margin: 0 0 4px;
   color: var(--muted);
@@ -750,6 +827,10 @@ main {
   letter-spacing: -0.04em;
   font-variant-numeric: tabular-nums;
   color: var(--patient);
+}
+
+#total-patient {
+  color: #c53030;
 }
 
 .totals {
