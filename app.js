@@ -70,6 +70,8 @@ const visit = {
 let visitReady = false;
 let dialogGuardPaused = false;
 const DEFAULT_DOCUMENT_TITLE = document.title;
+const SESSION_STORAGE_KEY = "rcm-calculator-visit";
+const SESSION_STORAGE_VERSION = 1;
 
 function printEstimateDocumentTitle() {
   const name = sanitizeName(visit.patientName);
@@ -581,6 +583,7 @@ function updateFinal() {
   }
 
   updateVisitControls();
+  persistSession();
 }
 
 function updateVisitBanner() {
@@ -595,6 +598,108 @@ function updateVisitBanner() {
 
 function updateVisitControls() {
   printEstimateBtn.disabled = !visitReady || services.length === 0;
+}
+
+function isValidStoredService(service) {
+  return (
+    service &&
+    Number.isInteger(service.id) &&
+    service.id > 0 &&
+    typeof service.adaCode === "string" &&
+    isAdaCodeFormatValid(service.adaCode) &&
+    isKnownAdaCode(service.adaCode) &&
+    Number.isInteger(service.chargeCents) &&
+    service.chargeCents >= 0 &&
+    Number.isInteger(service.insuranceBp) &&
+    service.insuranceBp >= 0 &&
+    service.insuranceBp <= 10000 &&
+    Number.isInteger(service.patientCents) &&
+    Number.isInteger(service.insuranceCents)
+  );
+}
+
+function persistSession() {
+  if (!visitReady) return;
+  try {
+    sessionStorage.setItem(
+      SESSION_STORAGE_KEY,
+      JSON.stringify({
+        v: SESSION_STORAGE_VERSION,
+        nextId,
+        visit: {
+          patientName: visit.patientName,
+          officeName: visit.officeName,
+          serviceDateIso: visit.serviceDateIso,
+          deductibleApplicable: visit.deductibleApplicable,
+          deductibleCents: visit.deductibleCents,
+        },
+        services: services.map(
+          ({ id, adaCode, chargeCents, insuranceBp, patientCents, insuranceCents, patientBp }) => ({
+            id,
+            adaCode,
+            chargeCents,
+            insuranceBp,
+            patientCents,
+            insuranceCents,
+            patientBp,
+          })
+        ),
+      })
+    );
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+function clearPersistedSession() {
+  try {
+    sessionStorage.removeItem(SESSION_STORAGE_KEY);
+  } catch {
+    /* storage unavailable */
+  }
+}
+
+function restoreSession() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_STORAGE_KEY);
+    if (!raw) return false;
+
+    const data = JSON.parse(raw);
+    if (data.v !== SESSION_STORAGE_VERSION || !data.visit || !Array.isArray(data.services)) {
+      return false;
+    }
+
+    const patientName = sanitizeName(data.visit.patientName);
+    const officeName = sanitizeName(data.visit.officeName);
+    const serviceDateIso = String(data.visit.serviceDateIso || "");
+    if (patientName === "" || officeName === "" || !parseDisplayDate(isoToDisplayDate(serviceDateIso))) {
+      return false;
+    }
+
+    const restoredServices = data.services.filter(isValidStoredService);
+    const deductibleApplicable = Boolean(data.visit.deductibleApplicable);
+    const deductibleCents = deductibleApplicable
+      ? Math.max(0, Number(data.visit.deductibleCents) || 0)
+      : 0;
+    if (deductibleApplicable && deductibleCents <= 0) return false;
+
+    visit.patientName = patientName;
+    visit.officeName = officeName;
+    visit.serviceDateIso = serviceDateIso;
+    visit.deductibleApplicable = deductibleApplicable;
+    visit.deductibleCents = deductibleCents;
+
+    services.length = 0;
+    services.push(...restoredServices);
+
+    const maxId = restoredServices.reduce((max, service) => Math.max(max, service.id), 0);
+    nextId = Math.max(Number(data.nextId) || 1, maxId + 1, 1);
+
+    visitReady = true;
+    return true;
+  } catch {
+    return false;
+  }
 }
 
 function clearVisitSetupForm() {
@@ -741,6 +846,7 @@ function addService() {
 
 function resetVisit() {
   visitReady = false;
+  clearPersistedSession();
   closeDeductibleDialog();
 
   services.length = 0;
@@ -896,8 +1002,22 @@ serviceDateCalendarBtn.addEventListener("click", () => {
   openServiceDateCalendar();
 });
 
-renderServices();
-updatePreview();
-visitReady = false;
-updateVisitBanner();
-openDeductibleDialog({ preserveFields: false });
+function bootstrapCalculator() {
+  const restored = restoreSession();
+  renderServices();
+  updatePreview();
+
+  if (restored) {
+    setCalculatorLocked(false);
+    updateVisitBanner();
+    updateFinal();
+    ensureAdaDefaultOnFocus();
+    return;
+  }
+
+  visitReady = false;
+  updateVisitBanner();
+  openDeductibleDialog({ preserveFields: false });
+}
+
+bootstrapCalculator();
