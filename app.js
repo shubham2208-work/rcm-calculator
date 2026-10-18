@@ -67,6 +67,22 @@ const visit = {
 
 let visitReady = false;
 let dialogGuardPaused = false;
+const DEFAULT_DOCUMENT_TITLE = document.title;
+
+function printEstimateDocumentTitle() {
+  const name = sanitizeName(visit.patientName);
+  if (name === "") return DEFAULT_DOCUMENT_TITLE;
+  const safe = name.replace(/[/\\:*?"<>|]/g, "").trim();
+  return safe === "" ? DEFAULT_DOCUMENT_TITLE : `${safe} estimation`;
+}
+
+function applyPrintDocumentTitle() {
+  document.title = printEstimateDocumentTitle();
+}
+
+function restoreDocumentTitle() {
+  document.title = DEFAULT_DOCUMENT_TITLE;
+}
 
 function sanitizeName(raw) {
   return String(raw).replace(/\s+/g, " ").trim().slice(0, 80);
@@ -679,8 +695,16 @@ document.querySelector("#reset").addEventListener("click", resetVisit);
 
 printEstimateBtn.addEventListener("click", () => {
   if (!visitReady) return;
+  applyPrintDocumentTitle();
   window.print();
 });
+
+window.addEventListener("beforeprint", () => {
+  if (!visitReady) return;
+  applyPrintDocumentTitle();
+});
+
+window.addEventListener("afterprint", restoreDocumentTitle);
 
 deductibleForm.querySelectorAll('input[name="deductible-applicable"]').forEach((input) => {
   input.addEventListener("change", onDeductibleChoiceChange);
