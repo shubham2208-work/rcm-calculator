@@ -433,6 +433,27 @@ main {
   box-shadow: var(--focus-ring);
 }
 
+.code-input.is-invalid {
+  border-color: #c53030;
+}
+
+.code-input.is-invalid:focus {
+  border-color: #c53030;
+  box-shadow: 0 0 0 3px rgba(197, 48, 48, 0.22);
+}
+
+.ada-code-error {
+  min-height: 0;
+  margin: 6px 0 0;
+  color: #b42318;
+  font-size: 14px;
+  line-height: 1.35;
+}
+
+.ada-code-error:not(:empty) {
+  min-height: 1.2em;
+}
+
 .ada-code-wrap {
   position: relative;
 }

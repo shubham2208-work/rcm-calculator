@@ -45,6 +45,7 @@ const editVisitBtn = document.querySelector("#edit-visit");
 const printEstimateBtn = document.querySelector("#print-estimate");
 const form = document.querySelector("#entry-form");
 const adaSuggestionsEl = document.querySelector("#ada-suggestions");
+const adaCodeErrorEl = document.querySelector("#ada-code-error");
 
 const ADA_DEFAULT_PREFIX = "D";
 const ADA_SUGGESTION_LIMIT = 8;
@@ -217,6 +218,21 @@ function isAdaCodeEntryReady(code) {
   return isAdaCodeFormatValid(code) && isKnownAdaCode(code);
 }
 
+function adaCatalogErrorMessage(code) {
+  if (isAdaCodeFormatValid(code) && !isKnownAdaCode(code)) {
+    return `${code} is not in the ADA code list. Pick a code from the suggestions.`;
+  }
+  return "";
+}
+
+function setAdaCodeFieldError(message) {
+  const text = message || "";
+  adaCodeErrorEl.textContent = text;
+  const invalid = Boolean(text);
+  adaInput.classList.toggle("is-invalid", invalid);
+  adaInput.setAttribute("aria-invalid", invalid ? "true" : "false");
+}
+
 function ensureAdaDefaultOnFocus() {
   const code = sanitizeAdaCode(adaInput.value);
   if (code === "") {
@@ -316,9 +332,13 @@ function renderAdaSuggestions(matches) {
   adaInput.setAttribute("aria-expanded", "true");
 }
 
+function adaSuggestionsAreOpen() {
+  return adaSuggestionMatches.length > 0 && !adaSuggestionsEl.classList.contains("is-hidden");
+}
+
 function updateAdaSuggestions() {
   const code = sanitizeAdaCode(adaInput.value);
-  if (!isAdaCodeEntryReady(code)) {
+  if (code.length < 2) {
     closeAdaSuggestions();
     return;
   }
@@ -463,14 +483,17 @@ function updatePreview() {
   previewInsuranceCard.classList.toggle("is-zero", !ready);
   addButton.disabled = !ready;
 
+  const catalogError = adaCatalogErrorMessage(adaCode);
+  setAdaCodeFieldError(catalogError);
+
   const untouched =
     !isAdaCodeEntryReady(adaCode) && percentInput.value === "" && amountInput.value === "";
   if (ready) {
     entryHint.textContent = `${adaCode} is ready. Add it, then enter the next service.`;
   } else if (untouched) {
     entryHint.textContent = "Enter an ADA code, a percent, and an amount, then add it to the visit.";
-  } else if (isAdaCodeFormatValid(adaCode) && !isKnownAdaCode(adaCode)) {
-    entryHint.textContent = `${adaCode} is not in the ADA code list. Pick a code from the suggestions.`;
+  } else if (catalogError) {
+    entryHint.textContent = "Choose a valid ADA code from the list to add this service.";
   } else if (adaCode === ADA_DEFAULT_PREFIX || adaCode.length < 5) {
     entryHint.textContent = "Enter the ADA code as D plus four digits (example: D0120).";
   } else if (!isAdaCodeFormatValid(adaCode)) {
@@ -695,6 +718,13 @@ function saveDeductibleFromDialog() {
 function addService() {
   if (!visitReady) return;
   const adaCode = sanitizeAdaCode(adaInput.value);
+  const catalogError = adaCatalogErrorMessage(adaCode);
+  if (catalogError) {
+    setAdaCodeFieldError(catalogError);
+    entryHint.textContent = "Choose a valid ADA code from the list to add this service.";
+    adaInput.focus();
+    return;
+  }
   const split = currentSplit();
   if (!isAdaCodeEntryReady(adaCode) || !split) return;
   services.push({ id: nextId++, adaCode, ...split });
@@ -754,7 +784,8 @@ adaInput.addEventListener("input", () => {
 });
 
 adaInput.addEventListener("keydown", (event) => {
-  if (adaSuggestionMatches.length === 0) return;
+  if (!adaSuggestionsAreOpen()) return;
+
   if (event.key === "ArrowDown") {
     event.preventDefault();
     adaSuggestionIndex = Math.min(adaSuggestionIndex + 1, adaSuggestionMatches.length - 1);
@@ -763,10 +794,12 @@ adaInput.addEventListener("keydown", (event) => {
     event.preventDefault();
     adaSuggestionIndex = Math.max(adaSuggestionIndex - 1, 0);
     highlightAdaSuggestion(adaSuggestionIndex);
-  } else if (event.key === "Enter" && adaSuggestionIndex >= 0) {
+  } else if (event.key === "Enter") {
     event.preventDefault();
-    selectAdaSuggestion(adaSuggestionMatches[adaSuggestionIndex].code);
+    const index = adaSuggestionIndex >= 0 ? adaSuggestionIndex : 0;
+    selectAdaSuggestion(adaSuggestionMatches[index].code);
   } else if (event.key === "Escape") {
+    event.preventDefault();
     closeAdaSuggestions();
   }
 });
