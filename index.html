@@ -158,18 +158,25 @@
           <h2 id="entry-heading">Code, insurance, and amount</h2>
 
           <form id="entry-form">
-            <label class="field">
+            <label class="field ada-code-field">
               <span>ADA code</span>
-              <input
-                id="ada-code"
-                class="code-input"
-                type="text"
-                autocomplete="off"
-                maxlength="10"
-                placeholder="Your ADA code here"
-                aria-label="ADA code"
-                spellcheck="false"
-              />
+              <div class="ada-code-wrap">
+                <input
+                  id="ada-code"
+                  class="code-input"
+                  type="text"
+                  autocomplete="off"
+                  maxlength="5"
+                  placeholder="D0120"
+                  aria-label="ADA code"
+                  spellcheck="false"
+                  role="combobox"
+                  aria-expanded="false"
+                  aria-controls="ada-suggestions"
+                  aria-autocomplete="list"
+                />
+                <ul id="ada-suggestions" class="ada-suggestions is-hidden" role="listbox"></ul>
+              </div>
             </label>
 
             <div class="inputs">
@@ -299,6 +306,7 @@
       </article>
     </template>
 
+    <script src="ada-codes.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

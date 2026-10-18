@@ -424,6 +424,55 @@ main {
   box-shadow: var(--focus-ring);
 }
 
+.ada-code-wrap {
+  position: relative;
+}
+
+.ada-suggestions {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  margin: 0;
+  padding: 6px;
+  overflow: auto;
+  list-style: none;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--card);
+  box-shadow: var(--shadow);
+}
+
+.ada-suggestion {
+  display: grid;
+  grid-template-columns: 5.5rem 1fr;
+  gap: 10px;
+  align-items: baseline;
+  padding: 10px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.ada-suggestion:hover,
+.ada-suggestion.is-active {
+  background: var(--surface-muted);
+}
+
+.ada-suggestion-code {
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+
+.ada-suggestion-desc {
+  font-size: 13px;
+  line-height: 1.35;
+  color: var(--muted);
+}
+
 .inputs {
   display: grid;
   grid-template-columns: 0.8fr 1.2fr;

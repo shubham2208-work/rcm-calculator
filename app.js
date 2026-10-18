@@ -44,6 +44,16 @@ const visitServiceDateEl = document.querySelector("#visit-service-date");
 const editVisitBtn = document.querySelector("#edit-visit");
 const printEstimateBtn = document.querySelector("#print-estimate");
 const form = document.querySelector("#entry-form");
+const adaSuggestionsEl = document.querySelector("#ada-suggestions");
+
+const ADA_DEFAULT_PREFIX = "D";
+const ADA_SUGGESTION_LIMIT = 8;
+const ADA_CODE_INDEX = Array.isArray(window.ADA_CDT_CODES)
+  ? window.ADA_CDT_CODES.map(({ c, d }) => ({ code: c, desc: d }))
+  : [];
+
+let adaSuggestionIndex = -1;
+let adaSuggestionMatches = [];
 
 let nextId = 1;
 const services = [];
@@ -89,7 +99,123 @@ function sanitizePercent(raw) {
 }
 
 function sanitizeAdaCode(raw) {
-  return String(raw).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
+  let value = String(raw).toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (value === "") return "";
+  if (/^\d/.test(value)) value = `D${value}`;
+  if (!value.startsWith("D")) value = `D${value.replace(/^D*/, "")}`;
+  return value.slice(0, 5);
+}
+
+function isAdaCodeEntryReady(code) {
+  return code !== "" && code !== ADA_DEFAULT_PREFIX;
+}
+
+function ensureAdaDefaultOnFocus() {
+  const code = sanitizeAdaCode(adaInput.value);
+  if (code === "") {
+    adaInput.value = ADA_DEFAULT_PREFIX;
+    adaInput.setSelectionRange(1, 1);
+  }
+}
+
+function resetAdaInputForNextService() {
+  adaInput.value = ADA_DEFAULT_PREFIX;
+  closeAdaSuggestions();
+}
+
+function filterAdaCodes(query) {
+  const q = sanitizeAdaCode(query);
+  if (q.length < 2) return [];
+  const qUpper = q.toUpperCase();
+  const qDigits = qUpper.replace(/^D/, "");
+  const results = [];
+  for (const item of ADA_CODE_INDEX) {
+    if (item.code.startsWith(qUpper)) {
+      results.push({ ...item, rank: 0 });
+      continue;
+    }
+    if (qDigits && item.code.slice(1).startsWith(qDigits)) {
+      results.push({ ...item, rank: 1 });
+      continue;
+    }
+    const descUpper = item.desc.toUpperCase();
+    if (descUpper.includes(qUpper) || (qDigits && descUpper.includes(qDigits))) {
+      results.push({ ...item, rank: 2 });
+    }
+  }
+  results.sort((a, b) => a.rank - b.rank || a.code.localeCompare(b.code));
+  return results.slice(0, ADA_SUGGESTION_LIMIT);
+}
+
+function closeAdaSuggestions() {
+  adaSuggestionsEl.classList.add("is-hidden");
+  adaSuggestionsEl.replaceChildren();
+  adaSuggestionMatches = [];
+  adaSuggestionIndex = -1;
+  adaInput.setAttribute("aria-expanded", "false");
+  adaInput.removeAttribute("aria-activedescendant");
+}
+
+function highlightAdaSuggestion(index) {
+  const items = adaSuggestionsEl.querySelectorAll(".ada-suggestion");
+  items.forEach((el, i) => {
+    el.classList.toggle("is-active", i === index);
+    if (i === index) el.scrollIntoView({ block: "nearest" });
+  });
+  if (index >= 0 && items[index]) {
+    adaInput.setAttribute("aria-activedescendant", items[index].id);
+  } else {
+    adaInput.removeAttribute("aria-activedescendant");
+  }
+}
+
+function selectAdaSuggestion(code) {
+  adaInput.value = code;
+  closeAdaSuggestions();
+  updatePreview();
+  adaInput.focus();
+  adaInput.setSelectionRange(code.length, code.length);
+}
+
+function renderAdaSuggestions(matches) {
+  adaSuggestionMatches = matches;
+  adaSuggestionIndex = -1;
+  if (matches.length === 0) {
+    closeAdaSuggestions();
+    return;
+  }
+  adaSuggestionsEl.replaceChildren(
+    ...matches.map((item, index) => {
+      const row = document.createElement("li");
+      row.className = "ada-suggestion";
+      row.role = "option";
+      row.id = `ada-suggestion-${index}`;
+      row.dataset.code = item.code;
+      const codeEl = document.createElement("span");
+      codeEl.className = "ada-suggestion-code";
+      codeEl.textContent = item.code;
+      const descEl = document.createElement("span");
+      descEl.className = "ada-suggestion-desc";
+      descEl.textContent = item.desc;
+      row.append(codeEl, descEl);
+      row.addEventListener("mousedown", (event) => {
+        event.preventDefault();
+        selectAdaSuggestion(item.code);
+      });
+      return row;
+    })
+  );
+  adaSuggestionsEl.classList.remove("is-hidden");
+  adaInput.setAttribute("aria-expanded", "true");
+}
+
+function updateAdaSuggestions() {
+  const code = sanitizeAdaCode(adaInput.value);
+  if (!isAdaCodeEntryReady(code)) {
+    closeAdaSuggestions();
+    return;
+  }
+  renderAdaSuggestions(filterAdaCodes(code));
 }
 
 function todayIsoLocal() {
@@ -220,7 +346,7 @@ function updatePreview() {
   const adaCode = sanitizeAdaCode(adaInput.value);
   const insuranceBp = percentToBasisPoints(percentInput.value);
   const split = currentSplit();
-  const ready = adaCode !== "" && split !== null;
+  const ready = isAdaCodeEntryReady(adaCode) && split !== null;
 
   previewPatientPercent.textContent =
     insuranceBp === null ? "—" : formatPercent(10000 - insuranceBp);
@@ -231,13 +357,13 @@ function updatePreview() {
   addButton.disabled = !ready;
 
   const untouched =
-    adaCode === "" && percentInput.value === "" && amountInput.value === "";
+    !isAdaCodeEntryReady(adaCode) && percentInput.value === "" && amountInput.value === "";
   if (ready) {
     entryHint.textContent = `${adaCode} is ready. Add it, then enter the next service.`;
   } else if (untouched) {
     entryHint.textContent = "Enter an ADA code, a percent, and an amount, then add it to the visit.";
-  } else if (adaCode === "") {
-    entryHint.textContent = "Enter the ADA code for this service.";
+  } else if (!isAdaCodeEntryReady(adaCode)) {
+    entryHint.textContent = "Enter the ADA code for this service (starts with D).";
   } else if (insuranceBp === null) {
     entryHint.textContent = "Enter the insurance percent for this service.";
   } else {
@@ -433,6 +559,7 @@ function saveDeductibleFromDialog() {
     closeDeductibleDialog();
     updateVisitBanner();
     updateFinal();
+    ensureAdaDefaultOnFocus();
     adaInput.focus();
     return;
   }
@@ -450,6 +577,7 @@ function saveDeductibleFromDialog() {
   closeDeductibleDialog();
   updateVisitBanner();
   updateFinal();
+  ensureAdaDefaultOnFocus();
   adaInput.focus();
 }
 
@@ -457,9 +585,9 @@ function addService() {
   if (!visitReady) return;
   const adaCode = sanitizeAdaCode(adaInput.value);
   const split = currentSplit();
-  if (adaCode === "" || !split) return;
+  if (!isAdaCodeEntryReady(adaCode) || !split) return;
   services.push({ id: nextId++, adaCode, ...split });
-  adaInput.value = "";
+  resetAdaInputForNextService();
   percentInput.value = "";
   amountInput.value = "";
   renderServices();
@@ -480,7 +608,7 @@ function resetVisit() {
   visit.deductibleApplicable = false;
   visit.deductibleCents = 0;
 
-  adaInput.value = "";
+  resetAdaInputForNextService();
   percentInput.value = "";
   amountInput.value = "";
   clearVisitSetupForm();
@@ -494,9 +622,42 @@ function resetVisit() {
   openDeductibleDialog({ preserveFields: false });
 }
 
+adaInput.addEventListener("focus", () => {
+  ensureAdaDefaultOnFocus();
+  updateAdaSuggestions();
+});
+
+adaInput.addEventListener("blur", () => {
+  window.setTimeout(() => {
+    closeAdaSuggestions();
+    if (sanitizeAdaCode(adaInput.value) === "") {
+      adaInput.value = ADA_DEFAULT_PREFIX;
+    }
+  }, 120);
+});
+
 adaInput.addEventListener("input", () => {
   setCaret(adaInput, sanitizeAdaCode(adaInput.value));
+  updateAdaSuggestions();
   updatePreview();
+});
+
+adaInput.addEventListener("keydown", (event) => {
+  if (adaSuggestionMatches.length === 0) return;
+  if (event.key === "ArrowDown") {
+    event.preventDefault();
+    adaSuggestionIndex = Math.min(adaSuggestionIndex + 1, adaSuggestionMatches.length - 1);
+    highlightAdaSuggestion(adaSuggestionIndex);
+  } else if (event.key === "ArrowUp") {
+    event.preventDefault();
+    adaSuggestionIndex = Math.max(adaSuggestionIndex - 1, 0);
+    highlightAdaSuggestion(adaSuggestionIndex);
+  } else if (event.key === "Enter" && adaSuggestionIndex >= 0) {
+    event.preventDefault();
+    selectAdaSuggestion(adaSuggestionMatches[adaSuggestionIndex].code);
+  } else if (event.key === "Escape") {
+    closeAdaSuggestions();
+  }
 });
 
 percentInput.addEventListener("input", () => {
