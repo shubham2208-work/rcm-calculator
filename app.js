@@ -102,7 +102,7 @@ function removePrintFrame() {
 }
 
 function runPrintEstimate() {
-  if (!visitReady) return;
+  if (!visitReady || services.length === 0) return;
 
   const title = printEstimateDocumentTitle();
   removePrintFrame();
@@ -579,6 +579,8 @@ function updateFinal() {
   } else {
     barCaptionEl.textContent = `${formatCents(sum.patientCents)} patient · ${formatCents(sum.insuranceCents)} insurance`;
   }
+
+  updateVisitControls();
 }
 
 function updateVisitBanner() {
@@ -592,7 +594,7 @@ function updateVisitBanner() {
 }
 
 function updateVisitControls() {
-  printEstimateBtn.disabled = !visitReady;
+  printEstimateBtn.disabled = !visitReady || services.length === 0;
 }
 
 function clearVisitSetupForm() {
