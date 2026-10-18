@@ -49,6 +49,9 @@ const visit = {
   deductibleCents: 0,
 };
 
+let visitReady = false;
+let dialogGuardPaused = false;
+
 function sanitizeName(raw) {
   return String(raw).replace(/\s+/g, " ").trim().slice(0, 80);
 }
@@ -249,11 +252,24 @@ function updateVisitBanner() {
   visitOfficeNameEl.textContent = ready ? visit.officeName : "—";
 }
 
+function clearVisitSetupForm() {
+  patientNameInput.value = "";
+  officeNameInput.value = "";
+  deductibleAmountInput.value = "";
+  deductibleForm.querySelectorAll('input[name="deductible-applicable"]').forEach((input) => {
+    input.checked = input.value === "no";
+  });
+  deductibleAmountWrap.classList.add("is-hidden");
+  deductibleErrorEl.textContent = "";
+}
+
 function syncDeductibleForm() {
   patientNameInput.value = visit.patientName;
   officeNameInput.value = visit.officeName;
   const yes = visit.deductibleApplicable;
-  deductibleForm.querySelector(`input[value="${yes ? "yes" : "no"}"]`).checked = true;
+  deductibleForm.querySelectorAll('input[name="deductible-applicable"]').forEach((input) => {
+    input.checked = input.value === (yes ? "yes" : "no");
+  });
   deductibleAmountWrap.classList.toggle("is-hidden", !yes);
   if (yes && visit.deductibleCents > 0) {
     deductibleAmountInput.value = sanitizeAmount(String(visit.deductibleCents / 100));
@@ -263,19 +279,29 @@ function syncDeductibleForm() {
   deductibleErrorEl.textContent = "";
 }
 
-function openDeductibleDialog() {
-  syncDeductibleForm();
+function setCalculatorLocked(locked) {
+  document.body.classList.toggle("visit-dialog-open", locked);
+}
+
+function openDeductibleDialog({ preserveFields = visitReady } = {}) {
+  if (preserveFields) syncDeductibleForm();
+  else clearVisitSetupForm();
+
   if (typeof deductibleDialog.showModal === "function") {
     deductibleDialog.showModal();
   } else {
     deductibleDialog.setAttribute("open", "");
   }
+  setCalculatorLocked(true);
   patientNameInput.focus();
 }
 
 function closeDeductibleDialog() {
+  dialogGuardPaused = true;
   if (deductibleDialog.open) deductibleDialog.close();
   deductibleDialog.removeAttribute("open");
+  dialogGuardPaused = false;
+  setCalculatorLocked(false);
 }
 
 function onDeductibleChoiceChange() {
@@ -310,6 +336,7 @@ function saveDeductibleFromDialog() {
   if (!yes) {
     visit.deductibleApplicable = false;
     visit.deductibleCents = 0;
+    visitReady = true;
     closeDeductibleDialog();
     updateVisitBanner();
     updateFinal();
@@ -326,6 +353,7 @@ function saveDeductibleFromDialog() {
 
   visit.deductibleApplicable = true;
   visit.deductibleCents = cents;
+  visitReady = true;
   closeDeductibleDialog();
   updateVisitBanner();
   updateFinal();
@@ -333,6 +361,11 @@ function saveDeductibleFromDialog() {
 }
 
 function addService() {
+  if (!visitReady) {
+    openDeductibleDialog({ preserveFields: false });
+    deductibleErrorEl.textContent = "Enter visit details to start this patient.";
+    return;
+  }
   const adaCode = sanitizeAdaCode(adaInput.value);
   const split = currentSplit();
   if (adaCode === "" || !split) return;
@@ -347,19 +380,28 @@ function addService() {
 }
 
 function resetVisit() {
-  services.splice(0, services.length);
+  visitReady = false;
+  closeDeductibleDialog();
+
+  services.length = 0;
   nextId = 1;
   visit.patientName = "";
   visit.officeName = "";
   visit.deductibleApplicable = false;
   visit.deductibleCents = 0;
+
   adaInput.value = "";
   percentInput.value = "";
   amountInput.value = "";
+  clearVisitSetupForm();
+
   renderServices();
   updatePreview();
   updateVisitBanner();
-  openDeductibleDialog();
+  updateFinal();
+
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  openDeductibleDialog({ preserveFields: false });
 }
 
 adaInput.addEventListener("input", () => {
@@ -407,8 +449,21 @@ deductibleForm.addEventListener("submit", (event) => {
   saveDeductibleFromDialog();
 });
 
-editDeductibleBtn.addEventListener("click", openDeductibleDialog);
-editVisitBtn.addEventListener("click", openDeductibleDialog);
+deductibleDialog.addEventListener("cancel", (event) => {
+  if (!visitReady) event.preventDefault();
+});
+
+deductibleDialog.addEventListener("close", () => {
+  if (dialogGuardPaused) return;
+  if (!visitReady) {
+    openDeductibleDialog({ preserveFields: false });
+    return;
+  }
+  setCalculatorLocked(false);
+});
+
+editDeductibleBtn.addEventListener("click", () => openDeductibleDialog());
+editVisitBtn.addEventListener("click", () => openDeductibleDialog());
 
 patientNameInput.addEventListener("input", () => {
   deductibleErrorEl.textContent = "";
@@ -421,4 +476,5 @@ officeNameInput.addEventListener("input", () => {
 renderServices();
 updatePreview();
 updateVisitBanner();
-openDeductibleDialog();
+visitReady = false;
+openDeductibleDialog({ preserveFields: false });
