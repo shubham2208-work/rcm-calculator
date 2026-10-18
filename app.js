@@ -76,12 +76,91 @@ function printEstimateDocumentTitle() {
   return safe === "" ? DEFAULT_DOCUMENT_TITLE : `${safe} estimation`;
 }
 
+function setDocumentTitle(title) {
+  document.title = title;
+  const titleEl = document.querySelector("title");
+  if (titleEl) titleEl.textContent = title;
+}
+
 function applyPrintDocumentTitle() {
-  document.title = printEstimateDocumentTitle();
+  setDocumentTitle(printEstimateDocumentTitle());
 }
 
 function restoreDocumentTitle() {
-  document.title = DEFAULT_DOCUMENT_TITLE;
+  setDocumentTitle(DEFAULT_DOCUMENT_TITLE);
+}
+
+let printFrameEl = null;
+
+function removePrintFrame() {
+  if (printFrameEl) {
+    printFrameEl.remove();
+    printFrameEl = null;
+  }
+}
+
+function runPrintEstimate() {
+  if (!visitReady) return;
+
+  const title = printEstimateDocumentTitle();
+  removePrintFrame();
+
+  printFrameEl = document.createElement("iframe");
+  printFrameEl.className = "print-frame";
+  printFrameEl.setAttribute("aria-hidden", "true");
+  printFrameEl.setAttribute("title", title);
+  document.body.appendChild(printFrameEl);
+
+  const frameDoc = printFrameEl.contentDocument;
+  const frameWindow = printFrameEl.contentWindow;
+  if (!frameDoc || !frameWindow) {
+    removePrintFrame();
+    applyPrintDocumentTitle();
+    window.print();
+    return;
+  }
+
+  const stylesHref = new URL("styles.css", window.location.href).href;
+  const appClone = document.querySelector(".app").cloneNode(true);
+
+  frameDoc.open();
+  frameDoc.write(
+    `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title></title><link rel="stylesheet" href="${stylesHref}"></head><body></body></html>`
+  );
+  frameDoc.close();
+  frameDoc.title = title;
+  const frameTitleEl = frameDoc.querySelector("title");
+  if (frameTitleEl) frameTitleEl.textContent = title;
+  frameDoc.body.appendChild(appClone);
+
+  let printed = false;
+  const printFromFrame = () => {
+    if (printed) return;
+    printed = true;
+    frameDoc.title = title;
+    if (frameTitleEl) frameTitleEl.textContent = title;
+    frameWindow.focus();
+    frameWindow.print();
+  };
+
+  frameWindow.addEventListener("afterprint", removePrintFrame, { once: true });
+
+  const stylesheet = frameDoc.querySelector('link[rel="stylesheet"]');
+  if (stylesheet) {
+    if (stylesheet.sheet) {
+      window.setTimeout(printFromFrame, 50);
+    } else {
+      stylesheet.addEventListener("load", () => window.setTimeout(printFromFrame, 50), {
+        once: true,
+      });
+      stylesheet.addEventListener("error", printFromFrame, { once: true });
+      window.setTimeout(printFromFrame, 800);
+    }
+  } else {
+    window.setTimeout(printFromFrame, 50);
+  }
+
+  applyPrintDocumentTitle();
 }
 
 function sanitizeName(raw) {
@@ -693,18 +772,16 @@ form.addEventListener("submit", (event) => {
 
 document.querySelector("#reset").addEventListener("click", resetVisit);
 
-printEstimateBtn.addEventListener("click", () => {
-  if (!visitReady) return;
-  applyPrintDocumentTitle();
-  window.print();
-});
+printEstimateBtn.addEventListener("click", runPrintEstimate);
 
 window.addEventListener("beforeprint", () => {
   if (!visitReady) return;
   applyPrintDocumentTitle();
 });
 
-window.addEventListener("afterprint", restoreDocumentTitle);
+window.addEventListener("afterprint", () => {
+  window.setTimeout(restoreDocumentTitle, 300);
+});
 
 deductibleForm.querySelectorAll('input[name="deductible-applicable"]').forEach((input) => {
   input.addEventListener("change", onDeductibleChoiceChange);
