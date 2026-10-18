@@ -907,8 +907,48 @@ main {
     display: none !important;
   }
 
-  .sheet-head {
+  /* Print uses a narrow page width; reset mobile ledger layout so columns line up. */
+  .sheet-head,
+  .service {
     display: grid !important;
+    grid-template-columns: 1.1fr 0.95fr 0.75fr 0.95fr 1fr;
+    gap: 4px 10px;
+    align-items: center;
+  }
+
+  .service-ins::before,
+  .patient-amount::before,
+  .insurance-amount::before {
+    content: none !important;
+  }
+
+  .sheet-head span:nth-child(n + 2),
+  .service-charge,
+  .service-ins,
+  .patient-amount,
+  .insurance-amount {
+    text-align: right;
+    justify-self: stretch;
+  }
+
+  .service-code {
+    text-align: left;
+  }
+
+  .service .remove {
+    display: none !important;
+  }
+
+  .totals div {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: baseline;
+    column-gap: 16px;
+  }
+
+  .totals dd {
+    min-width: 5.5rem;
+    text-align: right;
   }
 }
 
