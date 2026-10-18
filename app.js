@@ -36,6 +36,7 @@ const patientNameInput = document.querySelector("#patient-name");
 const officeNameInput = document.querySelector("#office-name");
 const serviceDateInput = document.querySelector("#service-date");
 const serviceDateNativeInput = document.querySelector("#service-date-native");
+const serviceDateCalendarBtn = document.querySelector("#service-date-calendar");
 const visitBannerEl = document.querySelector("#visit-banner");
 const visitPatientNameEl = document.querySelector("#visit-patient-name");
 const visitOfficeNameEl = document.querySelector("#visit-office-name");
@@ -142,6 +143,23 @@ function readServiceDateFromForm() {
   const native = serviceDateNativeInput.value;
   if (native && parseDisplayDate(isoToDisplayDate(native))) return native;
   return null;
+}
+
+function openServiceDateCalendar() {
+  const iso =
+    parseDisplayDate(serviceDateInput.value) ||
+    serviceDateNativeInput.value ||
+    todayIsoLocal();
+  serviceDateNativeInput.value = iso;
+  if (typeof serviceDateNativeInput.showPicker === "function") {
+    try {
+      serviceDateNativeInput.showPicker();
+      return;
+    } catch {
+      /* fall through */
+    }
+  }
+  serviceDateNativeInput.focus();
 }
 
 function amountToCents(raw) {
@@ -558,6 +576,11 @@ serviceDateNativeInput.addEventListener("change", () => {
   deductibleErrorEl.textContent = "";
   const iso = serviceDateNativeInput.value;
   if (iso) serviceDateInput.value = isoToDisplayDate(iso);
+});
+
+serviceDateCalendarBtn.addEventListener("click", () => {
+  deductibleErrorEl.textContent = "";
+  openServiceDateCalendar();
 });
 
 renderServices();
