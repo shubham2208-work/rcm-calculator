@@ -45,6 +45,29 @@
           />
         </label>
 
+        <div class="field">
+          <span>Date of service</span>
+          <div class="date-of-service">
+            <input
+              id="service-date"
+              class="text-input date-text"
+              type="text"
+              inputmode="numeric"
+              autocomplete="off"
+              maxlength="10"
+              placeholder="MM/DD/YYYY"
+              aria-label="Date of service in month, day, year format"
+            />
+            <input
+              id="service-date-native"
+              class="date-native"
+              type="date"
+              aria-label="Pick date of service from calendar"
+            />
+          </div>
+          <p class="field-hint">Type MM/DD/YYYY or choose a date from the calendar.</p>
+        </div>
+
         <div class="dialog-section">
           <p class="dialog-section-title">Deductible</p>
           <p class="dialog-section-note">Is a deductible applicable for this visit?</p>
@@ -99,6 +122,10 @@
           <div>
             <p class="visit-label">Office</p>
             <p class="visit-value" id="visit-office-name">—</p>
+          </div>
+          <div>
+            <p class="visit-label">Date of service</p>
+            <p class="visit-value visit-value-date" id="visit-service-date">—</p>
           </div>
           <button type="button" class="text-button" id="edit-visit">Edit visit</button>
         </div>

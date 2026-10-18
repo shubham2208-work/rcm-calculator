@@ -34,9 +34,12 @@ const deductibleErrorEl = document.querySelector("#deductible-error");
 const editDeductibleBtn = document.querySelector("#edit-deductible");
 const patientNameInput = document.querySelector("#patient-name");
 const officeNameInput = document.querySelector("#office-name");
+const serviceDateInput = document.querySelector("#service-date");
+const serviceDateNativeInput = document.querySelector("#service-date-native");
 const visitBannerEl = document.querySelector("#visit-banner");
 const visitPatientNameEl = document.querySelector("#visit-patient-name");
 const visitOfficeNameEl = document.querySelector("#visit-office-name");
+const visitServiceDateEl = document.querySelector("#visit-service-date");
 const editVisitBtn = document.querySelector("#edit-visit");
 const printEstimateBtn = document.querySelector("#print-estimate");
 const form = document.querySelector("#entry-form");
@@ -46,6 +49,7 @@ const services = [];
 const visit = {
   patientName: "",
   officeName: "",
+  serviceDateIso: "",
   deductibleApplicable: false,
   deductibleCents: 0,
 };
@@ -85,6 +89,59 @@ function sanitizePercent(raw) {
 
 function sanitizeAdaCode(raw) {
   return String(raw).toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
+}
+
+function todayIsoLocal() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function sanitizeServiceDateInput(raw) {
+  const digits = String(raw).replace(/\D/g, "").slice(0, 8);
+  if (digits.length <= 2) return digits;
+  if (digits.length <= 4) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
+  return `${digits.slice(0, 2)}/${digits.slice(2, 4)}/${digits.slice(4)}`;
+}
+
+function isoToDisplayDate(iso) {
+  if (!iso) return "";
+  const [year, month, day] = iso.split("-");
+  if (!year || !month || !day) return "";
+  return `${month}/${day}/${year}`;
+}
+
+function parseDisplayDate(text) {
+  const match = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec(String(text).trim());
+  if (!match) return null;
+  const month = Number(match[1]);
+  const day = Number(match[2]);
+  const year = Number(match[3]);
+  if (month < 1 || month > 12 || year < 1900 || year > 2100) return null;
+  const date = new Date(year, month - 1, day);
+  if (
+    date.getFullYear() !== year ||
+    date.getMonth() !== month - 1 ||
+    date.getDate() !== day
+  ) {
+    return null;
+  }
+  return `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
+}
+
+function setServiceDateFields(iso) {
+  serviceDateInput.value = isoToDisplayDate(iso);
+  serviceDateNativeInput.value = iso || "";
+}
+
+function readServiceDateFromForm() {
+  const fromText = parseDisplayDate(serviceDateInput.value);
+  if (fromText) return fromText;
+  const native = serviceDateNativeInput.value;
+  if (native && parseDisplayDate(isoToDisplayDate(native))) return native;
+  return null;
 }
 
 function amountToCents(raw) {
@@ -247,10 +304,12 @@ function updateFinal() {
 }
 
 function updateVisitBanner() {
-  const ready = visit.patientName !== "" && visit.officeName !== "";
+  const ready =
+    visit.patientName !== "" && visit.officeName !== "" && visit.serviceDateIso !== "";
   visitBannerEl.classList.toggle("is-hidden", !ready);
   visitPatientNameEl.textContent = ready ? visit.patientName : "—";
   visitOfficeNameEl.textContent = ready ? visit.officeName : "—";
+  visitServiceDateEl.textContent = ready ? isoToDisplayDate(visit.serviceDateIso) : "—";
   updateVisitControls();
 }
 
@@ -261,6 +320,7 @@ function updateVisitControls() {
 function clearVisitSetupForm() {
   patientNameInput.value = "";
   officeNameInput.value = "";
+  setServiceDateFields(todayIsoLocal());
   deductibleAmountInput.value = "";
   deductibleForm.querySelectorAll('input[name="deductible-applicable"]').forEach((input) => {
     input.checked = input.value === "no";
@@ -272,6 +332,7 @@ function clearVisitSetupForm() {
 function syncDeductibleForm() {
   patientNameInput.value = visit.patientName;
   officeNameInput.value = visit.officeName;
+  setServiceDateFields(visit.serviceDateIso || todayIsoLocal());
   const yes = visit.deductibleApplicable;
   deductibleForm.querySelectorAll('input[name="deductible-applicable"]').forEach((input) => {
     input.checked = input.value === (yes ? "yes" : "no");
@@ -333,8 +394,16 @@ function saveDeductibleFromDialog() {
     return;
   }
 
+  const serviceDateIso = readServiceDateFromForm();
+  if (!serviceDateIso) {
+    deductibleErrorEl.textContent = "Enter a valid date of service (MM/DD/YYYY).";
+    serviceDateInput.focus();
+    return;
+  }
+
   visit.patientName = patientName;
   visit.officeName = officeName;
+  visit.serviceDateIso = serviceDateIso;
 
   const yes =
     deductibleForm.querySelector('input[name="deductible-applicable"]:checked')?.value ===
@@ -389,6 +458,7 @@ function resetVisit() {
   nextId = 1;
   visit.patientName = "";
   visit.officeName = "";
+  visit.serviceDateIso = "";
   visit.deductibleApplicable = false;
   visit.deductibleCents = 0;
 
@@ -469,6 +539,25 @@ patientNameInput.addEventListener("input", () => {
 
 officeNameInput.addEventListener("input", () => {
   deductibleErrorEl.textContent = "";
+});
+
+serviceDateInput.addEventListener("input", () => {
+  setCaret(serviceDateInput, sanitizeServiceDateInput(serviceDateInput.value));
+  deductibleErrorEl.textContent = "";
+  const iso = parseDisplayDate(serviceDateInput.value);
+  if (iso) serviceDateNativeInput.value = iso;
+});
+
+serviceDateNativeInput.addEventListener("input", () => {
+  deductibleErrorEl.textContent = "";
+  const iso = serviceDateNativeInput.value;
+  if (iso) serviceDateInput.value = isoToDisplayDate(iso);
+});
+
+serviceDateNativeInput.addEventListener("change", () => {
+  deductibleErrorEl.textContent = "";
+  const iso = serviceDateNativeInput.value;
+  if (iso) serviceDateInput.value = isoToDisplayDate(iso);
 });
 
 renderServices();
