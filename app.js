@@ -51,6 +51,7 @@ const ADA_SUGGESTION_LIMIT = 8;
 const ADA_CODE_INDEX = Array.isArray(window.ADA_CDT_CODES)
   ? window.ADA_CDT_CODES.map(({ c, d }) => ({ code: c, desc: d }))
   : [];
+const ADA_CODE_SET = new Set(ADA_CODE_INDEX.map((item) => item.code));
 
 let adaSuggestionIndex = -1;
 let adaSuggestionMatches = [];
@@ -208,12 +209,12 @@ function isAdaCodeFormatValid(code) {
   return ADA_CODE_PATTERN.test(code);
 }
 
-function isAdaCodeEntryReady(code) {
-  return isAdaCodeFormatValid(code);
+function isKnownAdaCode(code) {
+  return ADA_CODE_SET.has(code);
 }
 
-function isKnownAdaCode(code) {
-  return ADA_CODE_INDEX.some((item) => item.code === code);
+function isAdaCodeEntryReady(code) {
+  return isAdaCodeFormatValid(code) && isKnownAdaCode(code);
 }
 
 function ensureAdaDefaultOnFocus() {
@@ -465,13 +466,14 @@ function updatePreview() {
   const untouched =
     !isAdaCodeEntryReady(adaCode) && percentInput.value === "" && amountInput.value === "";
   if (ready) {
-    const catalogNote = isKnownAdaCode(adaCode) ? "" : " (not in the suggestion list)";
-    entryHint.textContent = `${adaCode} is ready${catalogNote}. Add it, then enter the next service.`;
+    entryHint.textContent = `${adaCode} is ready. Add it, then enter the next service.`;
   } else if (untouched) {
     entryHint.textContent = "Enter an ADA code, a percent, and an amount, then add it to the visit.";
+  } else if (isAdaCodeFormatValid(adaCode) && !isKnownAdaCode(adaCode)) {
+    entryHint.textContent = `${adaCode} is not in the ADA code list. Pick a code from the suggestions.`;
   } else if (adaCode === ADA_DEFAULT_PREFIX || adaCode.length < 5) {
     entryHint.textContent = "Enter the ADA code as D plus four digits (example: D0120).";
-  } else if (!isAdaCodeEntryReady(adaCode)) {
+  } else if (!isAdaCodeFormatValid(adaCode)) {
     entryHint.textContent = "Use D followed by exactly four digits for the ADA code.";
   } else if (insuranceBp === null) {
     entryHint.textContent = "Enter the insurance percent for this service.";
