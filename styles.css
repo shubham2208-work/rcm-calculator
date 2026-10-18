@@ -714,8 +714,13 @@ main {
   color: var(--palette-frost);
 }
 
-.button-print:hover {
+.button-print:hover:not(:disabled) {
   background: var(--palette-navy);
+}
+
+.button-print:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 .button-reset {

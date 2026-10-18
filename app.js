@@ -38,6 +38,7 @@ const visitBannerEl = document.querySelector("#visit-banner");
 const visitPatientNameEl = document.querySelector("#visit-patient-name");
 const visitOfficeNameEl = document.querySelector("#visit-office-name");
 const editVisitBtn = document.querySelector("#edit-visit");
+const printEstimateBtn = document.querySelector("#print-estimate");
 const form = document.querySelector("#entry-form");
 
 let nextId = 1;
@@ -250,6 +251,11 @@ function updateVisitBanner() {
   visitBannerEl.classList.toggle("is-hidden", !ready);
   visitPatientNameEl.textContent = ready ? visit.patientName : "—";
   visitOfficeNameEl.textContent = ready ? visit.officeName : "—";
+  updateVisitControls();
+}
+
+function updateVisitControls() {
+  printEstimateBtn.disabled = !visitReady;
 }
 
 function clearVisitSetupForm() {
@@ -361,11 +367,7 @@ function saveDeductibleFromDialog() {
 }
 
 function addService() {
-  if (!visitReady) {
-    openDeductibleDialog({ preserveFields: false });
-    deductibleErrorEl.textContent = "Enter visit details to start this patient.";
-    return;
-  }
+  if (!visitReady) return;
   const adaCode = sanitizeAdaCode(adaInput.value);
   const split = currentSplit();
   if (adaCode === "" || !split) return;
@@ -426,12 +428,8 @@ form.addEventListener("submit", (event) => {
 
 document.querySelector("#reset").addEventListener("click", resetVisit);
 
-document.querySelector("#print-estimate").addEventListener("click", () => {
-  if (visit.patientName === "" || visit.officeName === "") {
-    openDeductibleDialog();
-    deductibleErrorEl.textContent = "Enter patient and office name before printing.";
-    return;
-  }
+printEstimateBtn.addEventListener("click", () => {
+  if (!visitReady) return;
   window.print();
 });
 
@@ -475,6 +473,6 @@ officeNameInput.addEventListener("input", () => {
 
 renderServices();
 updatePreview();
-updateVisitBanner();
 visitReady = false;
+updateVisitBanner();
 openDeductibleDialog({ preserveFields: false });
