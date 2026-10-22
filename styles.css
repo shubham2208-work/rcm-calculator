@@ -809,7 +809,7 @@ main {
 }
 
 .text-button:hover {
-  color: var(--palette-deep);
+  color: var(--ink);
 }
 
 .final {
@@ -830,7 +830,8 @@ main {
 }
 
 #total-patient {
-  color: #c53030;
+  color: #ff8a8a;
+  text-shadow: 0 2px 12px rgba(255, 100, 100, 0.35);
 }
 
 .totals {
@@ -936,12 +937,12 @@ main {
 }
 
 .button-print {
-  background: var(--palette-deep);
-  color: var(--palette-frost);
+  background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
+  color: #ffffff;
 }
 
 .button-print:hover:not(:disabled) {
-  background: var(--palette-navy);
+  filter: brightness(1.06);
 }
 
 .button-print:disabled {
@@ -950,18 +951,45 @@ main {
 }
 
 .button-reset {
-  background: transparent;
+  background: rgba(255, 255, 255, 0.06);
   color: var(--ink);
-  border: 1px solid var(--ink);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .button-reset:hover {
-  background: var(--surface-muted);
+  background: rgba(255, 255, 255, 0.14);
 }
 
 @media print {
+  :root {
+    color-scheme: light;
+    --ink: #0a1931;
+    --muted: #4a7fa7;
+    --line: #b3cfe5;
+    --patient: #1a3d63;
+    --insurance: #2a8fae;
+    --deductible: #7a5535;
+  }
+
   body {
-    background: #fff;
+    background: #fff !important;
+    color: var(--ink);
+  }
+
+  #total-patient {
+    color: #c53030 !important;
+    text-shadow: none;
+  }
+
+  .entry,
+  .ledger,
+  .visit-banner {
+    background: #fff !important;
+    border: 1px solid #b3cfe5 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
   }
 
   .deductible-dialog,

@@ -1,0 +1,284 @@
+/* Glassmorphism theme — layered on base styles */
+
+:root {
+  --accent-start: #d4e87a;
+  --accent-end: #2d6a4f;
+  --accent-mid: #52b788;
+
+  --bg: #0f2a22;
+  --ink: #f8fbff;
+  --muted: rgba(248, 251, 255, 0.72);
+  --card: rgba(255, 255, 255, 0.12);
+  --line: rgba(255, 255, 255, 0.32);
+  --patient: #bfe9ff;
+  --patient-bg: rgba(120, 190, 255, 0.16);
+  --insurance: #a8f0ff;
+  --insurance-bg: rgba(90, 210, 230, 0.16);
+  --deductible: #ffd9a8;
+  --deductible-bg: rgba(255, 200, 120, 0.14);
+  --surface-muted: rgba(255, 255, 255, 0.1);
+  --input-bg: rgba(255, 255, 255, 0.07);
+  --shadow: 0 24px 48px rgba(0, 0, 0, 0.32);
+  --glass-highlight: inset 0 1px 0 rgba(255, 255, 255, 0.28);
+  --focus-ring: 0 0 0 3px rgba(212, 232, 122, 0.42);
+  --radius: 24px;
+  --glass-blur: blur(22px);
+  color-scheme: dark;
+}
+
+body {
+  color: var(--ink);
+  background-color: var(--bg);
+  background-image:
+    linear-gradient(165deg, rgba(8, 24, 20, 0.55) 0%, rgba(10, 35, 28, 0.72) 100%),
+    radial-gradient(ellipse 90% 60% at 15% 10%, rgba(180, 220, 120, 0.35), transparent 55%),
+    radial-gradient(ellipse 80% 50% at 85% 15%, rgba(120, 200, 160, 0.25), transparent 50%),
+    radial-gradient(ellipse 120% 80% at 50% 100%, #3a6b52 0%, #1e4034 45%, #0c221c 100%);
+  background-attachment: fixed;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root {
+    --card: rgba(22, 48, 40, 0.92);
+    --input-bg: rgba(255, 255, 255, 0.1);
+    --surface-muted: rgba(255, 255, 255, 0.14);
+  }
+}
+
+.deductible-dialog {
+  border-radius: var(--radius);
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  box-shadow: var(--shadow), var(--glass-highlight);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.deductible-dialog::backdrop {
+  background: rgba(6, 18, 14, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+
+.choice:has(input:checked) {
+  border-color: rgba(212, 232, 122, 0.75);
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.choice input {
+  accent-color: var(--accent-mid);
+}
+
+.text-input,
+.code-input,
+.date-of-service-field,
+.affix {
+  border-color: var(--line);
+  background: var(--input-bg);
+  color: var(--ink);
+}
+
+.text-input::placeholder,
+.code-input::placeholder {
+  color: rgba(248, 251, 255, 0.45);
+}
+
+.text-input:focus,
+.code-input:focus,
+.date-of-service-field:focus-within,
+.affix:focus-within {
+  border-color: rgba(255, 255, 255, 0.55);
+  box-shadow: var(--focus-ring);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.deductible-error,
+.ada-code-error {
+  color: #ffb4b4;
+}
+
+.visit-banner,
+.entry,
+.ledger {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow), var(--glass-highlight);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.visit-banner {
+  border-radius: 18px;
+}
+
+.visit-value {
+  color: var(--ink);
+}
+
+.mark {
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0.08));
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  box-shadow: var(--glass-highlight);
+  color: var(--ink);
+}
+
+h1,
+h2,
+.dialog-section-title,
+.hero,
+.portion strong {
+  font-family: Montserrat, Outfit, "Segoe UI", sans-serif;
+}
+
+h1 {
+  font-size: 46px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-weight: 600;
+}
+
+.ada-suggestions {
+  background: rgba(18, 42, 36, 0.88);
+  box-shadow: var(--shadow), var(--glass-highlight);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+}
+
+.ada-suggestion:hover,
+.ada-suggestion.is-active {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.ada-suggestion-code {
+  color: var(--ink);
+}
+
+.date-calendar-button {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--ink);
+  border-left-color: var(--line);
+}
+
+.date-calendar-button:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.date-calendar-button:focus-visible {
+  outline-color: var(--accent-mid);
+}
+
+.date-of-service .date-text {
+  color: var(--ink);
+}
+
+.button {
+  background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
+  color: #ffffff;
+  font-weight: 700;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.button:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.button-print {
+  background: linear-gradient(135deg, var(--accent-start) 0%, var(--accent-end) 100%);
+  color: #ffffff;
+}
+
+.button-print:hover:not(:disabled) {
+  filter: brightness(1.06);
+}
+
+.button-reset {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--ink);
+  border: 1px solid rgba(255, 255, 255, 0.42);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.button-reset:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.empty {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.service {
+  background: transparent;
+}
+
+.service.is-latest {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.text-button:hover {
+  color: var(--ink);
+}
+
+#total-patient {
+  color: #ff8a8a;
+  text-shadow: 0 2px 12px rgba(255, 100, 100, 0.35);
+}
+
+.bar {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dialog-section {
+  border-top-color: var(--line);
+}
+
+.text-button.remove {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.text-button.remove:hover {
+  background: rgba(255, 255, 255, 0.16);
+  color: var(--ink);
+}
+
+@media print {
+  :root {
+    color-scheme: light;
+    --ink: #0a1931;
+    --muted: #4a7fa7;
+    --line: #b3cfe5;
+    --patient: #1a3d63;
+    --insurance: #2a8fae;
+    --deductible: #7a5535;
+  }
+
+  body {
+    background: #fff !important;
+    color: var(--ink);
+  }
+
+  #total-patient {
+    color: #c53030 !important;
+    text-shadow: none;
+  }
+
+  .entry,
+  .ledger,
+  .visit-banner,
+  .deductible-dialog {
+    background: #fff !important;
+    border: 1px solid #b3cfe5 !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
